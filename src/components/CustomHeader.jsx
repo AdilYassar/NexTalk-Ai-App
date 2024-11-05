@@ -5,7 +5,10 @@ import { RFValue } from 'react-native-responsive-fontsize'
 
 import aiLogo from '../assets/aiLogo.jpeg'
 import CustomText from './CustomText'
+import { useDispatch } from 'react-redux'
+import { clearAllChats } from '../redux/reducers/chatSlice'
 const CustomHeader = () => {
+    const dispatch = useDispatch();
   return (
     <View style={styles.container}>
       <SafeAreaView>
@@ -24,7 +27,9 @@ const CustomHeader = () => {
             </CustomText>
            </View>
         </View>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={()=>{
+            dispatch(clearAllChats())
+        }}>
             <CustomText size={14}   >
                 Clear
             </CustomText>

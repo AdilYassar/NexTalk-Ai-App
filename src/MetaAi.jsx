@@ -15,7 +15,8 @@ const MetaAi = () => {
     dispatch(changeCurrentChatId({chatId:id}));
 
   }
-  
+ 
+  console.log(JSON.stringify(chats));
   return (
     <ImageBackground source={WABG} style={styles.container} resizeMode='cover'>
    <CustomHeader />
@@ -24,8 +25,9 @@ const MetaAi = () => {
    setHeightOffMessageBox={setHeightOffMessageBox}
    heightOfMessageBox={heightOfMessageBox}
    setIsTyping={setIsTyping}
+   
    currentChatId={currentChatId}
-   selectCurrentChatId={id=>setCurrentChatId(id)}
+  setCurrentChatId={id=>setCurrentChatId(id)}
    length={chats?.find(chat=>chat.id==currentChatId)?.messages?.length  || [].lenght}
    messages={chats?.find(chat=>chat.id==currentChatId)?.messages  || []}
     />
