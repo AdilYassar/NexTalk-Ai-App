@@ -1,10 +1,18 @@
 import React from 'react';
 import { SafeAreaView, Text, StyleSheet } from 'react-native';
 import MetaAi from './src/MetaAi';
-
+import { Provider } from 'react-redux';
+import { persistor, store } from './src/redux/store';
+import { PersistGate } from 'redux-persist/integration/react';
 const App = () => {
   return (
-  <MetaAi />
+    <Provider store={store} >
+    <PersistGate loading={null} persistor={persistor}    >
+      <MetaAi />  
+      
+      </PersistGate>
+
+  </Provider>
   );
 };
 
