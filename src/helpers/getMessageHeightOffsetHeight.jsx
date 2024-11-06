@@ -1,7 +1,9 @@
-const getMessageHeightOffset = (heightOfMessageBox, windowHeight) => {
-    // Ensure inputs are valid numbers
-    if (typeof heightOfMessageBox !== 'number' || typeof windowHeight !== 'number') {
-        console.warn('Invalid input: heightOfMessageBox and windowHeight should be numbers.');
+import { Dimensions } from "react-native";
+
+const getMessageHeightOffset = (heightOfMessageBox = 0, windowHeight = Dimensions.get('window').height) => {
+    // Ensure inputs are valid numbers and non-negative
+    if (typeof heightOfMessageBox !== 'number' || typeof windowHeight !== 'number' || heightOfMessageBox < 0 || windowHeight <= 0) {
+        console.warn('Invalid input: heightOfMessageBox and windowHeight should be positive numbers.');
         return 0;
     }
 
