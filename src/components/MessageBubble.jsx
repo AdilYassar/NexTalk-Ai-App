@@ -16,7 +16,7 @@ const MessageBubble = ({ message }) => {
         styles.messageContainer,
         {
           alignSelf: isMyMessage ? 'flex-end' : 'flex-start',
-          backgroundColor: isMyMessage ? '#154d37' : '#232626',
+          backgroundColor: isMyMessage ? '#DCF8C6' : '#FFFFFF',
           borderTopLeftRadius: isMyMessage ? 15 : 0,
           borderTopRightRadius: isMyMessage ? 0 : 15,
         },
@@ -25,73 +25,25 @@ const MessageBubble = ({ message }) => {
       {isMyMessage && <View style={styles.rightMessageArrow} />}
       {!isMyMessage && <View style={styles.leftMessageArrow} />}
       
-      {/* Conditional rendering for loading state */}
       {message.isLoading ? (
         <LoadingDots />
-      ) :
-      message?.imageUri ? (
+      ) : message?.imageUri ? (
         <Image 
-          source={{uri:message?.imageUri}} style={
-           {  height:RFPercentage(28),
-            width:RFPercentage(35),
-            resizeMode:'cover',
-            left:-5,
-            aspectRatio:4/4,
-            borderRadius:10}
-
-          }
+          source={{ uri: message?.imageUri }} 
+          style={styles.image}
         />
-      ):
-       (
-        <MarkdownDisplay
-          style={{
-            body: {
-              ...styles.messageText,
-              left: isMyMessage ? 10 : 0,
-              marginVertical: 0,
-              paddingVertical: 0,
-            },
-            link: {
-              color: 'lightblue',
-            },
-            blockquote: {
-              color: 'white',
-              backgroundColor: '#1d211e',
-              borderRadius: 4,
-            },
-            table: {
-              borderColor: 'white',
-            },
-            img:{
-            
-
-            },
-            code_inline: {
-              backgroundColor: '#1d211e',
-              color: 'white',
-              borderRadius: 5,
-              fence: {
-                backgroundColor: '#1d211e',
-                color: 'white',
-                borderRadius: 5,
-                borderWidth: 0,
-              },
-              tr: {
-                borderColor: 'white',
-              },
-            },
-          }}
-        >
+      ) : (
+        <MarkdownDisplay style={styles.markdownDisplay}>
           {message.content}
         </MarkdownDisplay>
       )}
 
       <View style={styles.timeAndReadContainer}>
-        <Text style={styles.timeText}>{dayjs(message.time).format('HH:mm A')}</Text>
+        <Text style={styles.timeText}>{dayjs(message.time).format('HH:mm')}</Text>
         {isMyMessage && (
           <Image
             source={TickIcon}
-            tintColor={isMessageRead ? '#53a6fd' : '#8aa69b'}
+            tintColor={isMessageRead ? '#34B7F1' : '#BDC3C7'}
             style={styles.tickIcon}
           />
         )}
@@ -103,49 +55,77 @@ const MessageBubble = ({ message }) => {
 const styles = StyleSheet.create({
   messageContainer: {
     maxWidth: '75%',
-    paddingVertical: 5, // Adjusted for better readability
+    paddingVertical: 8,
     paddingHorizontal: 12,
     marginVertical: 4,
     marginHorizontal: 10,
     borderRadius: 15,
-    flexDirection: 'column', // Keeps text and time below each other
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    shadowOffset: { width: 1, height: 1 },
   },
-  messageText: {
-    fontSize: RFValue(12),
-    color: 'white',
-    //marginBottom: 5, // Adds spacing before timestamp
+  markdownDisplay: {
+    body: {
+      fontSize: RFValue(14),
+      color: '#303030',
+      lineHeight: 18,
+    },
+    link: {
+      color: '#1A73E8',
+    },
+    blockquote: {
+      color: '#303030',
+      backgroundColor: '#F0F0F0',
+      borderRadius: 4,
+      padding: 5,
+    },
+    code_inline: {
+      backgroundColor: '#ECEFF1',
+      color: '#303030',
+      borderRadius: 5,
+      paddingHorizontal: 3,
+    },
+  },
+  image: {
+    height: RFPercentage(28),
+    width: RFPercentage(35),
+    resizeMode: 'cover',
+    borderRadius: 10,
+    marginBottom: 5,
   },
   leftMessageArrow: {
     position: 'absolute',
     top: 0,
-    left: -8,
+    left: -6,
     width: 0,
     height: 0,
     borderRightWidth: 10,
     borderTopWidth: 10,
     borderRightColor: 'transparent',
-    borderTopColor: '#232626',
+    borderTopColor: '#FFFFFF',
   },
   rightMessageArrow: {
     position: 'absolute',
     top: 0,
-    right: -8,
+    right: -6,
     width: 0,
     height: 0,
     borderLeftWidth: 10,
     borderTopWidth: 10,
     borderLeftColor: 'transparent',
-    borderTopColor: '#154d37',
+    borderTopColor: '#DCF8C6',
   },
   timeAndReadContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-end',
-    marginTop: 2,
+    marginTop: 4,
   },
   timeText: {
     fontSize: 10,
-    color: '#8aa69b',
+    color: '#757575',
   },
   tickIcon: {
     width: 15,

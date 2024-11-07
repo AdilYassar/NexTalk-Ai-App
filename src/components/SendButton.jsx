@@ -1,3 +1,4 @@
+/* eslint-disable eqeqeq */
 /* eslint-disable no-undef */
 /* eslint-disable react-hooks/exhaustive-deps */
 import { View, Text, StyleSheet, Dimensions, Platform, TextInput, Animated, TouchableOpacity } from 'react-native';
@@ -5,7 +6,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { RFValue } from 'react-native-responsive-fontsize';
 import useKeyboardOffsetHeight from '../helpers/useKeyboardOffsetHeight';
 import { useDispatch, useSelector } from 'react-redux';
-import { addMessages, createNewChat, selectChats, selectCurrentChatId } from '../redux/reducers/chatSlice';
+import {markMessageAsRead, updateChatSummary,addMessages, createNewChat, selectChats, selectCurrentChatId } from '../redux/reducers/chatSlice';
 import { PaperAirplaneIcon } from 'react-native-heroicons/solid';
 import uuid from 'react-native-uuid';
 
@@ -26,7 +27,7 @@ const SendButton = ({
     const keyboardOffsetHeight = useKeyboardOffsetHeight();
 
     const [message, setMessage] = useState('');
-
+    const TextInputRef = useRef(null);
     const handleTextChange = (text) => {
         setIsTyping(!!text);
         setMessage(text);
@@ -56,15 +57,36 @@ const SendButton = ({
         ],
     };
 
+
+const identifyImageApi = (prompt) =>{
+    const imageRegex = /\b(generate\s*image|imagine)\b/i;
+    if(imageRegex.test(prompt)){
+        return true;
+    }else{
+        return false;
+    }
+}
+
+
+
+
     const addChat = async (newId) => {
-        const selectedChatId = newId || currentChatId;
-        await dispatch(
+        let selectedChatId = newId || currentChatId;
+        if(length == 0 && message.trim().length>0){
+             dispatch(updateChatSummary({
+                chatId:selectedChatId,
+                summary:message?.trim().slice(0,40)
+            }))
+        }
+        
+        
+         dispatch(
             addMessages({
                 chatId: selectedChatId,
                 message: {
                     content: message,
                     time: new Date().toString(),
-                    role: 'user', //assistant
+                    role: 'user', //  assistant
                     id: uuid.v4(), // Ensure unique ID for each message
                     isMessageRead: false,
                    
@@ -72,7 +94,49 @@ const SendButton = ({
                 },
             })
         );
+        setMessage('');
+       // TextInputRef.current.blur();
+        setIsTyping:{false};
+
+let promptForAssistant={
+    content:message,
+    time:new Date().toString(),
+    role:'user',
+    id:length+1,
+    isMessageRead:false
+
+}
+
+        if(!identifyImageApi(message)){
+            fetchResponse(promptForAssistant, selectedChatId)
+        }else{
+            generateImage(promptForAssistant,selectedChatId)
+        }
+
+        dispatch(markMessageAsRead({
+            chatId:selectedChatId,
+            messageId: length +1
+        }))
     };
+
+
+
+
+
+const fetchResponse = async(mes, selectedChatId)=>{
+
+}
+
+const generateImage = async(mes, selectedChatId)=>{
+
+}
+
+
+
+
+
+
+
 
     return (
         <View
@@ -88,6 +152,8 @@ const SendButton = ({
                     <TextInput
                         editable
                         multiline
+                        ref={TextInputRef}
+                        value={message}
                         style={styles.textinput}
                         placeholder="Message"
                         placeholderTextColor="#a0a0a0"

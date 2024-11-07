@@ -20,6 +20,7 @@ const CustomText = ({
                     color,
                     opacity,
                     fontWeight,
+                    ...style
                 },
                 style, // Combine additional styles
             ]}
