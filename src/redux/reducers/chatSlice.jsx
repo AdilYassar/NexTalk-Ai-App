@@ -26,11 +26,17 @@ export const chatSlice = createSlice({
             const {chatId,messages,summary}=action.payload
             state.chats.push({id:chatId, messages, summary});
 
+        },
+        clearChat:(state, action)=>{
+            const chatIndex = state.chats.findIndex(chat=>chat.id===action.payload.chatId)
+            if(chatIndex!=-1){
+                state.chats[chatIndex].messages = [];
+            }
         }
     }
 });
 
-export const { clearAllChats,createNewChat,addMessages, changeCurrentChatId } = chatSlice.actions;
+export const { clearChat, clearAllChats,createNewChat,addMessages, changeCurrentChatId } = chatSlice.actions;
 export const selectChats = state => state.chat.chats;
 export const selectCurrentChatId = state => state.chat.currentChatId;
 export default chatSlice.reducer;

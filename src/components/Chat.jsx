@@ -1,13 +1,15 @@
+/* eslint-disable no-undef */
 import { View, Text, Dimensions } from 'react-native';
 import React from 'react';
 import useKeyboardOffsetHeight from '../helpers/useKeyboardOffsetHeight';
 import getMessageHeightOffset from '../helpers/getMessageHeightOffsetHeight';
 import { FlashList } from '@shopify/flash-list';
 import MessageBubble from './MessageBubble';
+import EmptyComponent from './EmptyComponent';
 
 const windowHeight = Dimensions.get('window').height;
 
-const Chat = ({ idTyping, messages, heightOfMessageBox }) => {
+const Chat = ({ isTyping, messages, heightOfMessageBox }) => {
     const keyboardOffsetHeight = useKeyboardOffsetHeight();
 
     const renderMessageBubble = ({ item }) => {
@@ -20,9 +22,9 @@ const Chat = ({ idTyping, messages, heightOfMessageBox }) => {
 
     return (
         <View style={{ height: listHeight, flex: 1 }}>
-          {messages?.length === 0 ? (
-            <Text>Empty</Text>
-          ) : (
+           {messages?.length === 0 ? (
+                <EmptyComponent isTyping={isTyping} /> // Now isTyping is defined
+            ) :  (
             <FlashList 
               indicatorStyle="black" 
               data={[...messages].reverse()}

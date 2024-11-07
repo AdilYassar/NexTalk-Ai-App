@@ -20,7 +20,12 @@ const MetaAi = () => {
 
   return (
     <ImageBackground source={WABG} style={styles.container} resizeMode="cover">
-      <CustomHeader />
+      <CustomHeader   
+      chats={chats}
+      currentChatId={currentChatId}
+      setCurrentChatId={id=>setCurrentChatId(id)}
+
+       />
 
       {/* Main chat and input area container */}
       <View style={styles.chatContainer}>

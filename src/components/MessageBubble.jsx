@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, Image } from 'react-native';
 import React from 'react';
-import { RFValue } from 'react-native-responsive-fontsize';
+import { RFPercentage, RFValue } from 'react-native-responsive-fontsize';
 import dayjs from 'dayjs';
 import TickIcon from '../assets/tick.png';
 import MarkdownDisplay from 'react-native-markdown-display';
@@ -28,7 +28,21 @@ const MessageBubble = ({ message }) => {
       {/* Conditional rendering for loading state */}
       {message.isLoading ? (
         <LoadingDots />
-      ) : (
+      ) :
+      message?.imageUri ? (
+        <Image 
+          source={{uri:message?.imageUri}} style={
+           {  height:RFPercentage(28),
+            width:RFPercentage(35),
+            resizeMode:'cover',
+            left:-5,
+            aspectRatio:4/4,
+            borderRadius:10}
+
+          }
+        />
+      ):
+       (
         <MarkdownDisplay
           style={{
             body: {
@@ -47,6 +61,10 @@ const MessageBubble = ({ message }) => {
             },
             table: {
               borderColor: 'white',
+            },
+            img:{
+            
+
             },
             code_inline: {
               backgroundColor: '#1d211e',
@@ -85,7 +103,7 @@ const MessageBubble = ({ message }) => {
 const styles = StyleSheet.create({
   messageContainer: {
     maxWidth: '75%',
-    paddingVertical: 8, // Adjusted for better readability
+    paddingVertical: 5, // Adjusted for better readability
     paddingHorizontal: 12,
     marginVertical: 4,
     marginHorizontal: 10,
@@ -95,7 +113,7 @@ const styles = StyleSheet.create({
   messageText: {
     fontSize: RFValue(12),
     color: 'white',
-    marginBottom: 5, // Adds spacing before timestamp
+    //marginBottom: 5, // Adds spacing before timestamp
   },
   leftMessageArrow: {
     position: 'absolute',

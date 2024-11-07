@@ -64,11 +64,11 @@ const SendButton = ({
                 message: {
                     content: message,
                     time: new Date().toString(),
-                    role: 'assistant',
+                    role: 'user', //assistant
                     id: uuid.v4(), // Ensure unique ID for each message
                     isMessageRead: false,
                    
-                    imageUri:'https://images.search.yahoo.com/images/view;_ylt=AwrEsYN2tytnqBgAjXKJzbkF;_ylu=c2VjA3NyBHNsawNpbWcEb2lkAzhkMTdlNTFlMTExYzEyYjJhYmJmZGNjMGIxMGY4NGU3BGdwb3MDMQRpdANiaW5n?back=https%3A%2F%2Fimages.search.yahoo.com%2Fsearch%2Fimages%3Fp%3Dold%2Bpc%2Bimages%2Bpurple%2Bpicture%26ei%3DUTF-8%26type%3DE210US739G0%26fr%3Dmcafee%26fr2%3Dp%253As%252Cv%253Ai%252Cm%253Asb-top%26tab%3Dorganic%26ri%3D1&w=1920&h=809&imgurl=static.vecteezy.com%2Fsystem%2Fresources%2Fpreviews%2F013%2F660%2F949%2Fnon_2x%2Fthe-screen-of-an-old-retro-pc-in-the-y2k-style-background-retro-wave-and-vapowave-purple-vintage-computer-interface-vector.jpg&rurl=https%3A%2F%2Fwww.vecteezy.com%2Fvector-art%2F13660949-the-screen-of-an-old-retro-pc-in-the-y2k-style-background-retro-wave-and-vapowave-purple-vintage-computer-interface&size=186KB&p=old+pc+images+purple+picture&oid=8d17e51e111c12b2abbfdcc0b10f84e7&fr2=p%3As%2Cv%3Ai%2Cm%3Asb-top&fr=mcafee&tt=The+screen+of+an+old+retro+PC+in+the+y2k+style.+Background+retro+wave+...&b=0&ni=160&no=1&ts=&tab=organic&sigr=pA6w9YpWRYBw&sigb=Tf5mgTOPCpmj&sigi=FQxk2rlz5Cun&sigt=U9LIrWpexd4W&.crumb=ueE8GCiMzcW&fr=mcafee&fr2=p%3As%2Cv%3Ai%2Cm%3Asb-top&type=E210US739G0'
+                    
                 },
             })
         );
