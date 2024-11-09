@@ -1,6 +1,6 @@
 import { View, Text, ImageBackground, StyleSheet } from 'react-native';
 import React, { useState } from 'react';
-import WABG from './assets/w_bg.png';
+import WABG from './assets/1.png';
 import CustomHeader from './components/CustomHeader';
 import { useDispatch, useSelector } from 'react-redux';
 import { changeCurrentChatId, selectChats, selectCurrentChatId } from './redux/reducers/chatSlice';

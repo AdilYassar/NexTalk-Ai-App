@@ -6,9 +6,12 @@ import React, { useEffect, useRef, useState } from 'react';
 import { RFValue } from 'react-native-responsive-fontsize';
 import useKeyboardOffsetHeight from '../helpers/useKeyboardOffsetHeight';
 import { useDispatch, useSelector } from 'react-redux';
-import {markMessageAsRead, updateChatSummary,addMessages, createNewChat, selectChats, selectCurrentChatId } from '../redux/reducers/chatSlice';
+import { addAssistantMessage, markMessageAsRead, updateChatSummary, addMessages, createNewChat, selectChats, selectCurrentChatId, updateAssistantMessage } from '../redux/reducers/chatSlice';
 import { PaperAirplaneIcon } from 'react-native-heroicons/solid';
 import uuid from 'react-native-uuid';
+import EventSource from 'react-native-sse';
+import { HUGGING_API_URL, HUGGING_API_KEY, STABLE_DIFFUSION_URL, STABLE_DIFFUSION_KEY } from '../redux/API';
+import axios from 'axios';
 
 const windowHeight = Dimensions.get('window').height;
 
@@ -28,6 +31,7 @@ const SendButton = ({
 
     const [message, setMessage] = useState('');
     const TextInputRef = useRef(null);
+
     const handleTextChange = (text) => {
         setIsTyping(!!text);
         setMessage(text);
@@ -57,86 +61,201 @@ const SendButton = ({
         ],
     };
 
-
-const identifyImageApi = (prompt) =>{
-    const imageRegex = /\b(generate\s*image|imagine)\b/i;
-    if(imageRegex.test(prompt)){
-        return true;
-    }else{
-        return false;
-    }
-}
-
-
-
+    const identifyImageApi = (prompt) => {
+        const imageRegex = /\b(generate\s*image|imagine)\b/i;
+        return imageRegex.test(prompt);
+    };
 
     const addChat = async (newId) => {
         let selectedChatId = newId || currentChatId;
-        if(length == 0 && message.trim().length>0){
-             dispatch(updateChatSummary({
-                chatId:selectedChatId,
-                summary:message?.trim().slice(0,40)
-            }))
-        }
-        
-        
-         dispatch(
-            addMessages({
+        if (length === 0 && message.trim().length > 0) {
+            dispatch(updateChatSummary({
                 chatId: selectedChatId,
-                message: {
-                    content: message,
-                    time: new Date().toString(),
-                    role: 'user', //  assistant
-                    id: uuid.v4(), // Ensure unique ID for each message
-                    isMessageRead: false,
-                   
-                    
-                },
-            })
-        );
+                summary: message?.trim().slice(0, 40)
+            }));
+        }
+
+        dispatch(addMessages({
+            chatId: selectedChatId,
+            message: {
+                content: message,
+                time: new Date().toString(),
+                role: 'user',
+                id: uuid.v4(),
+                isMessageRead: false,
+            },
+        }));
+
         setMessage('');
-       // TextInputRef.current.blur();
-        setIsTyping:{false};
+        setIsTyping(false);
 
-let promptForAssistant={
-    content:message,
-    time:new Date().toString(),
-    role:'user',
-    id:length+1,
-    isMessageRead:false
+        let promptForAssistant = {
+            content: message,
+            time: new Date().toString(),
+            role: 'user',
+            id: length + 1,
+            isMessageRead: false
+        };
 
-}
-
-        if(!identifyImageApi(message)){
-            fetchResponse(promptForAssistant, selectedChatId)
-        }else{
-            generateImage(promptForAssistant,selectedChatId)
+        if (!identifyImageApi(message)) {
+            fetchResponse(promptForAssistant, selectedChatId);
+        } else {
+            generateImage(promptForAssistant, selectedChatId);
         }
 
         dispatch(markMessageAsRead({
-            chatId:selectedChatId,
-            messageId: length +1
-        }))
+            chatId: selectedChatId,
+            messageId: length + 1
+        }));
     };
 
+    const fetchResponse = async (mes, selectedChatId) => {
+        let id = length + 2;
+        dispatch(addAssistantMessage({
+            chatId: selectedChatId,
+            message: {
+                content: 'loading ...',
+                time: mes.time,
+                role: 'assistant',
+                id: id,
+            }
+        }));
+
+        const eventSource = new EventSource(HUGGING_API_URL, {
+            method: 'POST',
+            headers: {
+                Authorization: `Bearer ${HUGGING_API_KEY}`,
+                'Content-Type': "application/json"
+            },
+            pollingInterval: 0,
+            body: JSON.stringify({
+                model: 'meta-llama/Meta-Llama-3-8B-Instruct',
+                messages: [...messages, mes],
+                max_token: 500,
+                stream: true,
+            })
+        });
+
+        let content = '';
+        let responseComplete = false;
+
+        eventSource.addEventListener('message', event => {
+            if (event.data !== '[DONE]') {
+                const parsedData = JSON.parse(event.data);
+                if (parsedData.choices && parsedData.choices.length > 0) {
+                    const delta = parsedData.choices[0].delta.content;
+                    if (delta) {
+                        content += delta;
+                        dispatch(updateAssistantMessage({
+                            chatId: selectedChatId,
+                            message: {
+                                content,
+                                time: new Date().toString(),
+                                role: 'assistant',
+                                id: id,
+                            },
+                            messageId: id,
+                        }));
+                    }
+                }
+            } else {
+                responseComplete = true;
+                eventSource.close();
+            }
+        });
+
+        eventSource.addEventListener('error', error => {
+            console.log(error);
+            dispatch(updateAssistantMessage({
+                chatId: selectedChatId,
+                message: {
+                    content: 'oops something is not working',
+                    time: new Date().toString(),
+                    role: 'assistant',
+                    id: id,
+                },
+                messageId: id,
+            }));
+            eventSource.close();
+        });
+
+        eventSource.addEventListener('close', () => {
+            if (!responseComplete) {
+                eventSource.close();
+            }
+        });
+
+        return () => {
+            eventSource.removeAllEventListeners();
+            eventSource.close();
+        };
+    };
+
+    const generateImage = async (mes, selectedChatId) => {
+        let id = length + 2;
+        dispatch(addAssistantMessage({
+            chatId: selectedChatId,
+            message: {
+                content: 'loading ...',
+                time: mes.time,
+                role: 'assistant',
+                id: id,
+            }
+        }));
+
+
+        try {
+            
+            const res = await axios.post(STABLE_DIFFUSION_URL,{
+                key:STABLE_DIFFUSION_KEY,
+                prompt:message,
+                negative_prompt:'low-quality',
+                width:'512',
+                height:'512',
+                safety_checkers:false,
+                seed:null,
+                samples:1,
+                base64:false,
+                webhook:null,
+                track_id:null,
+
+            },{
+                headers:{
+                    'Content-Type':'application/json'
+                }
+            });
+
+            dispatch(updateAssistantMessage({
+                chatId: selectedChatId,
+                message: {
+                    imageUri:res.data?.output[0],
+                    content:res.data?.output[0],
+                  
+                    time: new Date().toString(),
+                    role: 'assistant',
+                    id: id,
+                },
+                messageId: id,
+            }));
 
 
 
 
-const fetchResponse = async(mes, selectedChatId)=>{
 
-}
-
-const generateImage = async(mes, selectedChatId)=>{
-
-}
-
-
-
-
-
-
-
+        } catch (error) {
+            console.log(error);
+            dispatch(updateAssistantMessage({
+                chatId: selectedChatId,
+                message: {
+                    content: 'oops something is not working',
+                    time: new Date().toString(),
+                    role: 'assistant',
+                    id: id,
+                },
+                messageId: id,
+            }));
+        }
+    };
 
     return (
         <View
@@ -158,7 +277,6 @@ const generateImage = async(mes, selectedChatId)=>{
                         placeholder="Message"
                         placeholderTextColor="#a0a0a0"
                         onChangeText={handleTextChange}
-                       // onContentSizeChange={handleContentSizeChange} // Enable dynamic height adjustment
                     />
                 </View>
                 {isTyping && (
@@ -192,6 +310,9 @@ const generateImage = async(mes, selectedChatId)=>{
     );
 };
 
+// Styles omitted for brevity
+
+
 const styles = StyleSheet.create({
     container: {
         minHeight: windowHeight * 0.06,
@@ -210,7 +331,7 @@ const styles = StyleSheet.create({
         width: '100%',
     },
     inputContainer: {
-        backgroundColor: '#232626',
+        backgroundColor: 'grey',
         margin: '1%',
         flexDirection: 'row',
         alignItems: 'center',
@@ -241,5 +362,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
 });
+
+
+
 
 export default SendButton;

@@ -55,6 +55,24 @@ export const chatSlice = createSlice({
                 }
             }
         },
+        addAssistantMessage: (state, action) => {
+            const { chatId, message } = action.payload;
+            const chatIndex = state.chats.findIndex(chat => chat.id === chatId);
+            if (chatIndex !== -1) {
+                state.chats[chatIndex].messages.push(message);
+            }
+        },
+        updateAssistantMessage: (state, action) => {
+            const { chatId, message, messageId } = action.payload;
+            const chatIndex = state.chats.findIndex(chat => chat.id === chatId);
+            if (chatIndex !== -1) {
+                const messageIndex = state.chats[chatIndex].messages.findIndex(msg => msg.id === messageId);
+                if (messageIndex !== -1) {
+                    state.chats[chatIndex].messages[messageIndex] = message;
+                }
+            }
+        },
+
     }
 });
 
@@ -64,9 +82,11 @@ export const {
     clearChat, 
     markMessageAsRead,
     clearAllChats, 
+    addAssistantMessage,
     createNewChat, 
     addMessages, 
-    changeCurrentChatId 
+    changeCurrentChatId ,
+    updateAssistantMessage
 } = chatSlice.actions;
 
 export const selectChats = state => state.chat.chats;
